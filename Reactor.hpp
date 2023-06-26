@@ -10,14 +10,17 @@ using Server_Ptr = shared_ptr<Server_Socket>;
 class Reactor
 {
 public:
-    Reactor(uint16_t port, uint16_t backlog)
+    Reactor(uint16_t event_num = 1024)
     {
         this->epfd = epoll_create(1);
-        this->server->Init_Sock(port, backlog);
         this->quit=false;
         this->Accept_cb=NULL;
         this->Read_cb=NULL;
         this->Write_cb=NULL;
+        this->event_num=event_num;
+        this->event=new epoll_event;
+        Server_Socket* S=new Server_Socket();
+        this->server=std::make_shared<Server_Socket>(S);
     }
     // 返回server对象
     Server_Ptr Get_Server()
@@ -30,7 +33,8 @@ public:
         epoll_event ev={0};
         ev.events=event;
         ev.data.fd=sock;
-        epoll_ctl(this->epfd, EPOLL_CTL_ADD, sock, &ev);
+        uint16_t ret = epoll_ctl(this->epfd, EPOLL_CTL_ADD, sock, &ev);
+        return ret;
     }
 
     uint16_t Del_Reactor(int sock, uint32_t event)
@@ -38,7 +42,8 @@ public:
         epoll_event ev={0};
         ev.events=event;
         ev.data.fd=sock;
-        epoll_ctl(this->epfd, EPOLL_CTL_DEL, sock, &ev);
+        uint16_t ret = epoll_ctl(this->epfd, EPOLL_CTL_DEL, sock, &ev);
+        return ret;
     }
 
     uint16_t Mod_Reactor(int sock, uint32_t event)
@@ -46,7 +51,8 @@ public:
         epoll_event ev={0};
         ev.events=event;
         ev.data.fd=sock;
-        epoll_ctl(this->epfd, EPOLL_CTL_MOD, sock, &ev);
+        uint16_t ret = epoll_ctl(this->epfd, EPOLL_CTL_MOD, sock, &ev);
+        return ret;
     }
 
     // 设置非阻塞
@@ -64,10 +70,9 @@ public:
         fcntl(fd, F_SETFL, flag);
     }
 
-    //设置事件数量
-    void Set_Event_Num(uint32_t num)
+    void Exit()
     {
-        this->event_num=num;
+        this->quit=true;
     }
 
     //获取事件数量
@@ -76,24 +81,32 @@ public:
         return this->event_num;
     }
 
+    //返回当前事件
+    epoll_event Get_Now_Event()
+    {
+        return *event;
+    }
+   
     //事件主循环,默认死等
     void Deal_Event(uint16_t timeout=-1)
     {
-        epoll_event events[this->event_num];
+        epoll_event* events=new epoll_event[this->event_num];
         while(!this->quit)
         {
             int ready = epoll_wait(this->epfd,events,this->event_num,timeout);//默认死等
+            if(ready == 0) continue;
             for(int i=0;i<ready;i++)
             {
+                *event=events[i];
                 if(events[i].data.fd==server->Get_Sock()){
-                    if(!this->Accept_cb) this->Accept_cb();
+                    if(this->Accept_cb) this->Accept_cb();
                 }else if(events[i].events==EPOLLIN){
-                    if(!this->Read_cb) this->Read_cb();
+                    if(this->Read_cb) this->Read_cb();
                 }else if(events[i].events==EPOLLOUT){
-                    if(!this->Write_cb) this->Write_cb();
+                    if(this->Write_cb) this->Write_cb();
                 }
             }
-
+            memset(events,0,this->event_num);
         }
     }
 
@@ -106,4 +119,6 @@ private:
     Server_Ptr server;
     bool quit;
     uint32_t event_num;
+    epoll_event *event;
+    //当前event
 };

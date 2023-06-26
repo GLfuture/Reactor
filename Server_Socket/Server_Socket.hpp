@@ -72,6 +72,13 @@ private:
 class Server_Socket
 {
 public:
+    Server_Socket(Server_Socket* server)
+    {
+        this->fd=server->fd;
+        this->buffersize=server->buffersize;
+        this->clients=server->clients;
+        this->buffer=server->buffer;
+    }
     Server_Socket(int buffersize=DEFAULT_BUFFER_SIZE){
         this->buffersize=buffersize;
         this->buffer=new char[buffersize];
@@ -194,7 +201,7 @@ private:
 
 private:
     uint16_t fd;
-    //每一个用户对应一个string类型的唯一标识
+    //每一个用户对应一个fd类型的唯一标识
     map<uint16_t,shared_ptr<Client>> clients;
     char *buffer;//读缓冲区
     uint32_t buffersize;
