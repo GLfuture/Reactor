@@ -121,15 +121,17 @@ public:
         return this->clients[clientfd];
     }
 
-    uint32_t Send(uint16_t clientfd,Client_Ptr cptr)
+    uint32_t Send(uint16_t clientfd)
     {
+        Client_Ptr cptr=Get_Client(clientfd);
         uint32_t len = send(clientfd,cptr->wbuffer.c_str(),cptr->wbuffer.length(),0);
         Erase(len,cptr);
         return len;
     }
 
-    uint32_t Recv(uint16_t clientfd,Client_Ptr cptr)
+    uint32_t Recv(uint16_t clientfd)
     {
+        Client_Ptr cptr=Get_Client(clientfd);
         uint32_t len = recv(clientfd,this->buffer,this->buffersize,0);
         cptr->rbuffer+=this->buffer;
         memset(buffer,0,buffersize);
