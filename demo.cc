@@ -9,11 +9,11 @@ void Read_cb(Reactor R ,Server_Ptr server)
 {
     Client_Ptr client = server->Get_Client(R.Get_Now_Event().data.fd);
     //std::cout<<R.Get_Now_Event().data.fd<<std::endl;
-    server->Recv(R.Get_Now_Event().data.fd,client);
+    server->Recv(R.Get_Now_Event().data.fd);
     string buffer = client->Get_Rbuffer();
     std::cout<<buffer<<std::endl;
     client->Set_Wbuffer(buffer);
-    server->Send(R.Get_Now_Event().data.fd,client);
+    server->Send(R.Get_Now_Event().data.fd);
     client->Clean_Rbuffer();
 }
 
