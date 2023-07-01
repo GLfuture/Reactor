@@ -115,13 +115,18 @@ public:
         return clientfd;
     }
 
+    int Close(uint16_t clientfd)
+    {
+        return close(clientfd);
+    }
+
     //获取client
     Client_Ptr Get_Client(uint16_t clientfd)
     {
         return this->clients[clientfd];
     }
 
-    uint32_t Send(uint16_t clientfd)
+     uint32_t Send(uint16_t clientfd)
     {
         Client_Ptr cptr=Get_Client(clientfd);
         uint32_t len = send(clientfd,cptr->wbuffer.c_str(),cptr->wbuffer.length(),0);
