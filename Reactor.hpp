@@ -1,8 +1,9 @@
 #pragma once
 #include "Server_Socket/Server_Socket.hpp"
+#include "timer/timermanager.hpp"
 #include <sys/epoll.h>
 #include <fcntl.h>
-#include<functional>
+#include <functional>
 using std::function;
 using Server_Ptr = shared_ptr<Server_Socket>;
 
@@ -21,6 +22,8 @@ public:
         this->event=new epoll_event;
         Server_Socket* S=new Server_Socket();
         this->server=std::make_shared<Server_Socket>(S);
+        int timefd = timermanager.Create_Timerfd();
+        this->Add_Reactor(timefd,EPOLLIN|EPOLLET);
     }
     // 返回server对象
     Server_Ptr Get_Server()
@@ -28,30 +31,30 @@ public:
         return this->server;
     }
 
-    uint16_t Add_Reactor(int sock, uint32_t event)
+    uint16_t Add_Reactor(int fd, uint32_t event)
     {
         epoll_event ev={0};
         ev.events=event;
-        ev.data.fd=sock;
-        uint16_t ret = epoll_ctl(this->epfd, EPOLL_CTL_ADD, sock, &ev);
+        ev.data.fd=fd;
+        uint16_t ret = epoll_ctl(this->epfd, EPOLL_CTL_ADD, fd, &ev);
         return ret;
     }
 
-    uint16_t Del_Reactor(int sock, uint32_t event)
+    uint16_t Del_Reactor(int fd, uint32_t event)
     {
         epoll_event ev={0};
         ev.events=event;
-        ev.data.fd=sock;
-        uint16_t ret = epoll_ctl(this->epfd, EPOLL_CTL_DEL, sock, &ev);
+        ev.data.fd=fd;
+        uint16_t ret = epoll_ctl(this->epfd, EPOLL_CTL_DEL, fd, &ev);
         return ret;
     }
 
-    uint16_t Mod_Reactor(int sock, uint32_t event)
+    uint16_t Mod_Reactor(int fd, uint32_t event)
     {
         epoll_event ev={0};
         ev.events=event;
-        ev.data.fd=sock;
-        uint16_t ret = epoll_ctl(this->epfd, EPOLL_CTL_MOD, sock, &ev);
+        ev.data.fd=fd;
+        uint16_t ret = epoll_ctl(this->epfd, EPOLL_CTL_MOD, fd, &ev);
         return ret;
     }
 
@@ -88,11 +91,12 @@ public:
     }
    
     //事件主循环,默认死等
-    void Deal_Event(uint16_t timeout=-1)
+    void Event_Loop(uint16_t timeout=-1)
     {
         epoll_event* events=new epoll_event[this->event_num];
         while(!this->quit)
         {
+            timermanager.Update_Timerfd();
             int ready = epoll_wait(this->epfd,events,this->event_num,timeout);//默认死等
             if(ready == 0) continue;
             for(int i=0;i<ready;i++)
@@ -106,7 +110,7 @@ public:
                     if(this->Write_cb) this->Write_cb();
                 }
             }
-            memset(events,0,this->event_num);
+            timermanager.Start();
         }
     }
 
@@ -114,6 +118,7 @@ public:
     function<void()> Accept_cb;
     function<void()> Read_cb;
     function<void()> Write_cb;
+    function<void()> Timeout_cb;
 private:
     uint16_t epfd;
     Server_Ptr server;
@@ -121,4 +126,5 @@ private:
     uint32_t event_num;
     epoll_event *event;
     //当前event
+    TimerManager timermanager;
 };

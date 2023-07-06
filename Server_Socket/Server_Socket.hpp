@@ -12,7 +12,7 @@
 #include<string_view>
 #include<string.h>
 #include<memory>
-
+#include<unistd.h>
 #define OK 1
 #define DEFAULT_BUFFER_SIZE 1024
 #define Client_Ptr shared_ptr<Client>
