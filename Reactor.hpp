@@ -105,20 +105,63 @@ public:
                 if(events[i].data.fd==server->Get_Sock()){
                     if(this->Accept_cb) this->Accept_cb();
                 }else if(events[i].events==EPOLLIN){
-                    if(this->Read_cb) this->Read_cb();
+                    if(timermanager.Get_Timerfd()==events[i].data.fd) timermanager.Start();
+                    else {
+                        if(this->Read_cb) this->Read_cb();
+                    }
                 }else if(events[i].events==EPOLLOUT){
                     if(this->Write_cb) this->Write_cb();
                 }
             }
-            timermanager.Start();
         }
     }
 
-public:
+    void Set_Accept_cb(function<void()> &&accept_cb)
+    {
+        this->Accept_cb=accept_cb;
+    }
+
+    void Del_Accept_cb()
+    {
+        this->Accept_cb=NULL;
+    }
+
+    void Set_Read_cb(function<void()> &&read_cb)
+    {
+        this->Read_cb=read_cb;
+    }
+
+    void Del_Read_cb()
+    {
+        this->Read_cb=NULL;
+    }
+
+    void Set_Write_cb(function<void()> &&write_cb)
+    {
+        this->Write_cb=write_cb;
+    }
+
+    void Del_Write_cb()
+    {
+        this->Write_cb=NULL;
+    }
+   
+
+    void Set_Timeout_cb(uint16_t timerid,uint64_t interval_time,Timer::TimerType type,function<void()> &&timeout_cb)
+    {
+        timermanager.Add_Timer(timerid,interval_time,type,timeout_cb);
+    }
+
+    void Del_Timeout_cb(uint16_t timerid)
+    {
+        timermanager.Del_Timer(timerid);
+    }
+
+
+private:
     function<void()> Accept_cb;
     function<void()> Read_cb;
     function<void()> Write_cb;
-    function<void()> Timeout_cb;
 private:
     uint16_t epfd;
     Server_Ptr server;

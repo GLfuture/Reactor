@@ -1,3 +1,0 @@
-/home/gong/project/backend/timer/mytimer/build/CMakeFiles/test.dir
-/home/gong/project/backend/timer/mytimer/build/CMakeFiles/edit_cache.dir
-/home/gong/project/backend/timer/mytimer/build/CMakeFiles/rebuild_cache.dir

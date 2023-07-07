@@ -39,8 +39,7 @@ public:
             }
         }
     }
-
-protected:
+    
     // 判断最近的定时器是否到期
     bool Is_Ready()
     {
