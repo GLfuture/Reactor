@@ -1,4 +1,4 @@
 test: test.cc
-	g++ test.cc -o test
+	g++ test.cc -o test -g
 clean:
 	rm test
