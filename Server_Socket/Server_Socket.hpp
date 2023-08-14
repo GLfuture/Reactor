@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #ifndef SERVER_SOCKET_H
 #define SERVER_SOCKET_H
 #endif
@@ -89,7 +90,7 @@ namespace Server_Socket_NSP
             memset(this->buffer, 0, buffersize);
         }
         // 初始化sock
-        uint16_t Init_Sock(uint16_t port, uint16_t backlog)
+        int Init_Sock(uint16_t port, uint16_t backlog)
         {
             fd = socket(AF_INET, SOCK_STREAM, 0);
             if (fd < 0)
@@ -109,11 +110,11 @@ namespace Server_Socket_NSP
             return OK;
         }
 
-        uint16_t Accept()
+        int Accept()
         {
             sockaddr_in sin = {0};
             socklen_t len;
-            uint16_t clientfd = accept(fd, (sockaddr *)&sin, &len);
+            int clientfd = accept(fd, (sockaddr *)&sin, &len);
             if (clientfd <= 0)
             {
                 return clientfd;
@@ -133,18 +134,18 @@ namespace Server_Socket_NSP
             return this->clients[clientfd];
         }
 
-        uint32_t Send(uint16_t clientfd)
+        size_t Send(uint16_t clientfd)
         {
             Client_Ptr cptr = Get_Client(clientfd);
-            uint32_t len = send(clientfd, cptr->wbuffer.c_str(), cptr->wbuffer.length(), 0);
+            size_t len = send(clientfd, cptr->wbuffer.c_str(), cptr->wbuffer.length(), 0);
             Erase(len, cptr);
             return len;
         }
 
-        uint32_t Recv(uint16_t clientfd)
+        size_t Recv(uint16_t clientfd)
         {
             Client_Ptr cptr = Get_Client(clientfd);
-            uint32_t len = recv(clientfd, this->buffer, this->buffersize, 0);
+            size_t len = recv(clientfd, this->buffer, this->buffersize, 0);
             cptr->rbuffer += this->buffer;
             memset(buffer, 0, buffersize);
             return len;
