@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #define ENABLE_RBTREE_TIMER 1
 #include "Server_Socket/Server_Socket.hpp"
 #include "timer/timermanager.hpp"
@@ -16,7 +17,7 @@ namespace Reactor_NSP
     class Reactor
     {
     public:
-        Reactor(uint16_t event_num = 1024)
+        Reactor(uint16_t event_num,uint32_t buffer_size)
         {
             this->epfd = epoll_create(1);
             this->quit = false;
@@ -25,7 +26,7 @@ namespace Reactor_NSP
             this->Write_cb = NULL;
             this->event_num = event_num;
             this->event = new epoll_event;
-            Server_Socket *S = new Server_Socket();
+            Server_Socket *S = new Server_Socket(buffer_size);
             this->server = std::make_shared<Server_Socket>(S);
             int timefd = timermanager.Create_Timerfd();
             this->Add_Reactor(timefd, EPOLLIN | EPOLLET);

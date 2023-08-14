@@ -1,6 +1,9 @@
 #include"Reactor.hpp"
 using namespace Reactor_NSP;
-
+#define PORT 9999
+#define BACKLOG 10
+#define EVENT_NUM 1024
+#define BUFER_SIZE 1024
 //一定要传引用，因为定时任务会改变reactor的状态，导致段错误
 void Accept_cb(Reactor &R , Server_Ptr server)
 {
@@ -33,9 +36,9 @@ void Read_cb(Reactor &R ,Server_Ptr server)
 
 int main()
 {
-    Reactor R;
+    Reactor R(EVENT_NUM,BUFER_SIZE);
     Server_Ptr server=R.Get_Server();
-    server->Init_Sock(9999,10);
+    server->Init_Sock(PORT,BACKLOG);
     R.Add_Reactor(server->Get_Sock(),EPOLLIN);
     //设置非阻塞
     R.Set_No_Block(server->Get_Sock());

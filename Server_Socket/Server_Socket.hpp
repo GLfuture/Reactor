@@ -16,7 +16,6 @@
 namespace Server_Socket_NSP
 {
 #define OK 1
-#define DEFAULT_BUFFER_SIZE 1024
 #define Client_Ptr shared_ptr<Client>
 
     using std::map;
@@ -83,7 +82,7 @@ namespace Server_Socket_NSP
             this->clients = server->clients;
             this->buffer = server->buffer;
         }
-        Server_Socket(int buffersize = DEFAULT_BUFFER_SIZE)
+        Server_Socket(int buffersize)
         {
             this->buffersize = buffersize;
             this->buffer = new char[buffersize];
@@ -97,7 +96,7 @@ namespace Server_Socket_NSP
             {
                 return fd;
             }
-            uint16_t ret = Bind(port);
+            int ret = Bind(port);
             if (ret == -1)
             {
                 return ret;
@@ -168,7 +167,7 @@ namespace Server_Socket_NSP
         void Add_Client(uint16_t clientfd)
         {
             Client *client = new Client;
-            memset(client, 0, sizeof(client));
+            memset(client, 0, sizeof(*client));
             Client_Ptr client_ptr = std::make_shared<Client>(client);
             std::pair<uint16_t, Client_Ptr> mypair(clientfd, client_ptr);
             // make_pair报错???
