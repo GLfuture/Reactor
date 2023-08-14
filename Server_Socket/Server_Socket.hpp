@@ -16,7 +16,7 @@
 namespace Server_Socket_NSP
 {
 #define OK 1
-#define Client_Ptr shared_ptr<Client>
+#define Client_Ptr shared_ptr<Conn>
 
     using std::map;
     using std::shared_ptr;
@@ -24,26 +24,26 @@ namespace Server_Socket_NSP
     using std::string_view;
 
     class Server_Socket;
-    class Client
+    class Conn
     {
         friend class Server_Socket;
 
     public:
-        Client()
+        Conn()
         {
             this->rbuffer = "";
             this->wbuffer = "";
             this->data = NULL;
         }
 
-        Client(Client *client)
+        Conn(Conn *client)
         {
             data = client->data;
             rbuffer = client->rbuffer;
             wbuffer = client->wbuffer;
         }
 
-        Client(const Client &client)
+        Conn(const Conn &client)
         {
             data = client.data;
             rbuffer = client.rbuffer;
@@ -166,9 +166,9 @@ namespace Server_Socket_NSP
         // 添加client
         void Add_Client(uint16_t clientfd)
         {
-            Client *client = new Client;
+            Conn *client = new Conn;
             memset(client, 0, sizeof(*client));
-            Client_Ptr client_ptr = std::make_shared<Client>(client);
+            Client_Ptr client_ptr = std::make_shared<Conn>(client);
             std::pair<uint16_t, Client_Ptr> mypair(clientfd, client_ptr);
             // make_pair报错???
             clients.insert(mypair);
@@ -216,7 +216,7 @@ namespace Server_Socket_NSP
     private:
         uint16_t fd;
         // 每一个用户对应一个fd类型的唯一标识
-        map<uint16_t, shared_ptr<Client>> clients;
+        map<uint16_t, shared_ptr<Conn>> clients;
         char *buffer; // 读缓冲区
         uint32_t buffersize;
     };
