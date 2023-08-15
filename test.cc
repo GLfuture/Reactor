@@ -1,4 +1,5 @@
 #include"Reactor.hpp"
+#include "Server_Socket/Server_Socket.hpp"
 using namespace Reactor_NSP;
 #define PORT 9999
 #define BACKLOG 10
@@ -17,7 +18,7 @@ void Timeout_cb()
 
 void Read_cb(Reactor &R ,Server_Ptr server)
 {
-    Client_Ptr client = server->Get_Client(R.Get_Now_Event().data.fd);
+    Conn_Ptr client = server->Get_Client(R.Get_Now_Event().data.fd);
     server->Set_Buffer_Size(2048);
     //std::cout<<R.Get_Now_Event().data.fd<<std::endl;
     if(server->Recv(R.Get_Now_Event().data.fd)==0)

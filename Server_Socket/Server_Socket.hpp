@@ -17,7 +17,7 @@
 namespace Server_Socket_NSP
 {
 #define OK 1
-#define Client_Ptr shared_ptr<Conn>
+#define Conn_Ptr shared_ptr<Conn>
 
     using std::map;
     using std::shared_ptr;
@@ -129,14 +129,14 @@ namespace Server_Socket_NSP
         }
 
         // 获取client
-        Client_Ptr Get_Client(uint16_t clientfd)
+        Conn_Ptr Get_Client(uint16_t clientfd)
         {
             return this->clients[clientfd];
         }
 
         size_t Send(uint16_t clientfd)
         {
-            Client_Ptr cptr = Get_Client(clientfd);
+            Conn_Ptr cptr = Get_Client(clientfd);
             size_t len = send(clientfd, cptr->wbuffer.c_str(), cptr->wbuffer.length(), 0);
             Erase(len, cptr);
             return len;
@@ -144,7 +144,7 @@ namespace Server_Socket_NSP
 
         size_t Recv(uint16_t clientfd)
         {
-            Client_Ptr cptr = Get_Client(clientfd);
+            Conn_Ptr cptr = Get_Client(clientfd);
             size_t len = recv(clientfd, this->buffer, this->buffersize, 0);
             cptr->rbuffer += this->buffer;
             memset(buffer, 0, buffersize);
@@ -169,8 +169,8 @@ namespace Server_Socket_NSP
         {
             Conn *client = new Conn;
             memset(client, 0, sizeof(*client));
-            Client_Ptr client_ptr = std::make_shared<Conn>(client);
-            std::pair<uint16_t, Client_Ptr> mypair(clientfd, client_ptr);
+            Conn_Ptr client_ptr = std::make_shared<Conn>(client);
+            std::pair<uint16_t, Conn_Ptr> mypair(clientfd, client_ptr);
             // make_pair报错???
             clients.insert(mypair);
         }
@@ -188,7 +188,7 @@ namespace Server_Socket_NSP
         }
 
     private:
-        void Erase(int len, Client_Ptr cptr)
+        void Erase(int len, Conn_Ptr cptr)
         {
             string::iterator it = cptr->wbuffer.begin();
             for (int i = 0; i < len; i++)
