@@ -18,7 +18,7 @@ void Timeout_cb()
 
 void Read_cb(Reactor &R ,Server_Ptr server)
 {
-    Conn_Ptr client = server->Get_Client(R.Get_Now_Event().data.fd);
+    Conn_Ptr client = server->Get_Conn(R.Get_Now_Event().data.fd);
     server->Set_Buffer_Size(2048);
     //std::cout<<R.Get_Now_Event().data.fd<<std::endl;
     if(server->Recv(R.Get_Now_Event().data.fd)==0)
