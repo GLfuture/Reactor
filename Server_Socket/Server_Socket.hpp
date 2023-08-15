@@ -67,7 +67,7 @@ namespace Server_Socket_NSP
         }
 
     private:
-        // uint16_t clientfd;//使用reactor模型时不需要此属性，以节约空间
+        // uint16_t connfd;//使用reactor模型时不需要此属性，以节约空间
         void *data;
         string rbuffer;
         string wbuffer;
@@ -80,7 +80,7 @@ namespace Server_Socket_NSP
         {
             this->fd = server->fd;
             this->buffersize = server->buffersize;
-            this->clients = server->clients;
+            this->connections = server->connections;
             this->buffer = server->buffer;
         }
         Server_Socket(int buffersize)
@@ -114,38 +114,38 @@ namespace Server_Socket_NSP
         {
             sockaddr_in sin = {0};
             socklen_t len;
-            int clientfd = accept(fd, (sockaddr *)&sin, &len);
-            if (clientfd <= 0)
+            int connfd = accept(fd, (sockaddr *)&sin, &len);
+            if (connfd <= 0)
             {
-                return clientfd;
+                return connfd;
             }
-            Add_Client(clientfd);
-            return clientfd;
+            Add_Client(connfd);
+            return connfd;
         }
 
-        int Close(uint16_t clientfd)
+        int Close(uint16_t connfd)
         {
-            return close(clientfd);
+            return close(connfd);
         }
 
         // 获取client
-        Conn_Ptr Get_Client(uint16_t clientfd)
+        Conn_Ptr Get_Conn(uint16_t connfd)
         {
-            return this->clients[clientfd];
+            return this->connections[connfd];
         }
 
-        size_t Send(uint16_t clientfd)
+        size_t Send(uint16_t connfd)
         {
-            Conn_Ptr cptr = Get_Client(clientfd);
-            size_t len = send(clientfd, cptr->wbuffer.c_str(), cptr->wbuffer.length(), 0);
+            Conn_Ptr cptr = Get_Conn(connfd);
+            size_t len = send(connfd, cptr->wbuffer.c_str(), cptr->wbuffer.length(), 0);
             Erase(len, cptr);
             return len;
         }
 
-        size_t Recv(uint16_t clientfd)
+        size_t Recv(uint16_t connfd)
         {
-            Conn_Ptr cptr = Get_Client(clientfd);
-            size_t len = recv(clientfd, this->buffer, this->buffersize, 0);
+            Conn_Ptr cptr = Get_Conn(connfd);
+            size_t len = recv(connfd, this->buffer, this->buffersize, 0);
             cptr->rbuffer += this->buffer;
             memset(buffer, 0, buffersize);
             return len;
@@ -165,21 +165,21 @@ namespace Server_Socket_NSP
             memset(buffer, 0, size);
         }
         // 添加client
-        void Add_Client(uint16_t clientfd)
+        void Add_Client(uint16_t connfd)
         {
             Conn *client = new Conn;
             memset(client, 0, sizeof(*client));
             Conn_Ptr client_ptr = std::make_shared<Conn>(client);
-            std::pair<uint16_t, Conn_Ptr> mypair(clientfd, client_ptr);
+            std::pair<uint16_t, Conn_Ptr> mypair(connfd, client_ptr);
             // make_pair报错???
-            clients.insert(mypair);
+            connections.insert(mypair);
         }
 
         // 删除client
-        void Del_Client(uint16_t clientfd)
+        void Del_Client(uint16_t connfd)
         {
-            this->clients[clientfd].reset();
-            this->clients.erase(clientfd);
+            this->connections[connfd].reset();
+            this->connections.erase(connfd);
         }
 
         uint16_t Get_Sock()
@@ -217,7 +217,7 @@ namespace Server_Socket_NSP
     private:
         uint16_t fd;
         // 每一个用户对应一个fd类型的唯一标识
-        map<uint16_t, shared_ptr<Conn>> clients;
+        map<uint16_t, shared_ptr<Conn>> connections;
         char *buffer; // 读缓冲区
         uint32_t buffersize;
     };
