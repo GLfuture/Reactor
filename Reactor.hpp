@@ -81,7 +81,10 @@ namespace Reactor_NSP
 
         void Exit()
         {
+            if(exit_cb!=NULL) this->exit_cb();
             this->quit = true;
+            server->Close_Clients();
+            delete event;
         }
 
         // 获取事件数量
@@ -163,6 +166,16 @@ namespace Reactor_NSP
             this->Write_cb = NULL;
         }
 
+        void Set_Exit_cb(function<void()>&& exit_cb)
+        {
+            this->exit_cb = exit_cb;
+        }
+
+        void Del_Exit_cb()
+        {
+            this->exit_cb=NULL;
+        }
+
 #if ENABLE_RBTREE_TIMER|ENABLE_MINHEAP_TIMER
         Timer_Ptr Set_Timeout_cb(uint16_t timerid, uint64_t interval_time, Timer::TimerType type, function<void()> &&timeout_cb)
         {
@@ -189,7 +202,7 @@ namespace Reactor_NSP
         function<void()> Accept_cb;
         function<void()> Read_cb;
         function<void()> Write_cb;
-
+        function<void()> exit_cb;
     private:
         uint16_t epfd;
         Server_Ptr server;
