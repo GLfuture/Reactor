@@ -1,5 +1,6 @@
 #include"Reactor.hpp"
 #include "Server_Socket/Server_Socket.hpp"
+#include <sys/socket.h>
 using namespace Reactor_NSP;
 #define PORT 9999
 #define BACKLOG 10
@@ -16,6 +17,11 @@ void Timeout_cb()
     printf("调用\n");
 }
 
+void Exit_cb()
+{
+    printf("exit\n");
+}
+
 void Read_cb(Reactor &R ,Server_Ptr server)
 {
     Conn_Ptr client = server->Get_Conn(R.Get_Now_Event().data.fd);
@@ -25,6 +31,7 @@ void Read_cb(Reactor &R ,Server_Ptr server)
     {
         server->Del_Client(R.Get_Now_Event().data.fd);
         server->Close(R.Get_Now_Event().data.fd);
+        R.Exit();
         return ;
     }
     Timer_Ptr timer = R.Set_Timeout_cb(1,10,Timer::TYPE_ONCE,std::bind(Timeout_cb));
@@ -43,8 +50,9 @@ int main()
     R.Add_Reactor(server->Get_Sock(),EPOLLIN);
     //设置非阻塞
     R.Set_No_Block(server->Get_Sock());
-    R.Set_Accept_cb(bind(Accept_cb,std::ref(R),server));
-    R.Set_Read_cb(bind(Read_cb,std::ref(R),server));
+    R.Set_Accept_cb(std::bind(Accept_cb,std::ref(R),server));
+    R.Set_Read_cb(std::bind(Read_cb,std::ref(R),server));
+    R.Set_Exit_cb(std::bind(Exit_cb));
     R.Event_Loop();
     return 0;
 }
