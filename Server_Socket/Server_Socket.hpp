@@ -113,7 +113,8 @@ namespace Server_Socket_NSP
         int Accept()
         {
             sockaddr_in sin = {0};
-            socklen_t len;
+            memset(&sin, 0, sizeof(sin));
+            socklen_t len = sizeof(sin);
             int connfd = accept(fd, (sockaddr *)&sin, &len);
             if (connfd <= 0)
             {
@@ -185,6 +186,14 @@ namespace Server_Socket_NSP
         uint16_t Get_Sock()
         {
             return this->fd;
+        }
+
+        void Close_Clients()
+        {
+            for(map<uint16_t, shared_ptr<Conn>>::iterator it=connections.begin();it!=connections.end();it++){
+                Close((*it).first);
+            }
+            connections.clear();
         }
 
     private:
