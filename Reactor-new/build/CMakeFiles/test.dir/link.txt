@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/test.dir/test.cc.o  -o test  -Wl,-rpath,/home/gong/projects/Reactor/Reactor-new/lib ../lib/libreactor.so ../lib/libserver.so ../lib/libconn.so 

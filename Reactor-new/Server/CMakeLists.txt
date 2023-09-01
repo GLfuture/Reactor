@@ -1,0 +1,5 @@
+add_subdirectory(./Conn)
+set(SRC_LIST server.cc)
+include_directories(./)
+add_library(server SHARED ${SRC_LIST})
+target_link_libraries(server conn)
