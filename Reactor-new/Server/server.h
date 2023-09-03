@@ -52,10 +52,7 @@ public:
 
     int Get_Sock() { return _fd; }
 
-    void Del_Conn(int fd)
-    {
-        connections.erase(fd);
-    }
+    void Del_Conn(int fd);
     
 private:
     int _fd;
