@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC   -shared -Wl,-soname,libconn.so -o ../../../lib/libconn.so CMakeFiles/conn.dir/conn.cc.o 
