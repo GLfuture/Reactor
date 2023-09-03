@@ -91,5 +91,7 @@ void Server_Base::Clean_Conns()
 
 void Server_Base::Del_Conn(int fd)
 {
-    connections.erase(fd);
+    map<uint32_t,Tcp_Conn_Ptr>::iterator it = connections.find(fd);
+    if(it == connections.end()) return;
+    connections.erase(it);
 }
