@@ -28,8 +28,7 @@ void Read_cb(Reactor &R ,Server_Ptr server)
     int rlen=server->Recv(client,1024);
     if(rlen == 0)
     {
-        server->Del_Conn(clientfd);
-        server->Close(R.Get_Now_Event().data.fd);
+        server->Close(clientfd);
         R.Exit();
         return ;
     }

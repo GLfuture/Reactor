@@ -51,7 +51,7 @@ public:
     void Clean_Conns();
 
     int Get_Sock() { return _fd; }
-
+private:
     void Del_Conn(int fd);
     
 private:

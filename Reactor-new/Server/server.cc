@@ -91,6 +91,5 @@ void Server_Base::Clean_Conns()
 
 void Server_Base::Del_Conn(int fd)
 {
-    close(fd);
     connections.erase(fd);
 }
