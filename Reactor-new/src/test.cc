@@ -44,7 +44,8 @@ void Read_cb(Reactor &R ,Server_Ptr server)
 int main()
 {
     Reactor R(EVENT_NUM,BUFER_SIZE);
-    Server_Ptr server=R.Get_Server();
+    Server_Ptr server = std::make_shared<Server_Base>();
+    R.Add_Server(server);
     server->Bind(PORT);
     server->Listen(BACKLOG);
     R.Add_Reactor(server->Get_Sock(),EPOLLIN);

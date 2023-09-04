@@ -40,16 +40,14 @@ public:
 
     ssize_t Send(Tcp_Conn_Ptr& conn_ptr,uint32_t len);
 
-    Tcp_Conn_Ptr Get_Conn(int fd)
-    {   
-        return connections[fd];
-    }
+    Tcp_Conn_Ptr Get_Conn(int fd) { return connections[fd]; }
 
     int Close(int fd);
 
     void Clean_Conns();
 
     int Get_Sock() { return _fd; }
+
 private:
     void Del_Conn(int fd);
     

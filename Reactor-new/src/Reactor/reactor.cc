@@ -9,14 +9,13 @@ Reactor::Reactor(uint16_t event_num, uint32_t buffer_size)
     this->Write_cb = NULL;
     this->event_num = event_num;
     this->event = new epoll_event;
-    this->server = std::make_shared<Server_Base>();
     int timefd = timermanager.Create_Timerfd();
     this->Add_Reactor(timefd, EPOLLIN | EPOLLET);
 }
 
 Server_Ptr Reactor::Get_Server()
 {
-    return this->server;
+    return this->_server;
 }
 
 uint16_t Reactor::Add_Reactor(int fd, uint32_t event)
@@ -60,12 +59,17 @@ void Reactor::Set_Block(int fd)
     fcntl(fd, F_SETFL, flag);
 }
 
+void Reactor::Add_Server(Server_Ptr &server)
+{
+    this->_server = server;
+}
+
 void Reactor::Exit()
 {
     if (exit_cb != NULL)
         this->exit_cb();
     this->quit = true;
-    server->Clean_Conns();
+    _server->Clean_Conns();
     delete event;
 }
 
@@ -81,7 +85,7 @@ void Reactor::Event_Loop(uint16_t timeout)
         for (int i = 0; i < ready; i++)
         {
             *event = events[i];
-            if (events[i].data.fd == server->Get_Sock())
+            if (events[i].data.fd == _server->Get_Sock())
             {
                 if (this->Accept_cb)
                     this->Accept_cb();

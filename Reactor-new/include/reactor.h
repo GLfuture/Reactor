@@ -33,6 +33,8 @@ public:
     // 设置阻塞
     void Set_Block(int fd);
 
+    void Add_Server(Server_Ptr& server);
+
     void Exit();
 
     // 获取事件数量
@@ -84,7 +86,7 @@ private:
 
 private:
     uint16_t epfd;
-    Server_Ptr server;
+    Server_Ptr _server;
     bool quit;
     uint32_t event_num;
     epoll_event *event;
