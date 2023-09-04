@@ -5,7 +5,7 @@ Server_Base::Server_Base()
     _fd = socket(AF_INET, SOCK_STREAM, 0);
     if (_fd <= 0)
     {
-        log("socket fails");
+        printf("socket fails");
         exit(-1);
     }
 }
