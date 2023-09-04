@@ -1,6 +1,6 @@
 #include "reactor.h"
 
-Reactor::Reactor(uint16_t event_num, uint32_t buffer_size)
+Reactor::Reactor(uint16_t event_num)
 {
     this->epfd = epoll_create(1);
     this->quit = false;

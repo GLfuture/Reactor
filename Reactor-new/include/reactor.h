@@ -16,7 +16,7 @@ public:
     /// @brief
     /// @param event_num
     /// @param buffer_size
-    Reactor(uint16_t event_num, uint32_t buffer_size);
+    Reactor(uint16_t event_num);
     // 返回server对象
     Server_Ptr Get_Server();
 

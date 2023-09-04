@@ -3,7 +3,6 @@
 #define PORT 9999
 #define BACKLOG 10
 #define EVENT_NUM 1024
-#define BUFER_SIZE 1024
 //一定要传引用，因为定时任务会改变reactor的状态，导致段错误
 void Accept_cb(Reactor &R , Server_Ptr server)
 {
@@ -43,7 +42,7 @@ void Read_cb(Reactor &R ,Server_Ptr server)
 
 int main()
 {
-    Reactor R(EVENT_NUM,BUFER_SIZE);
+    Reactor R(EVENT_NUM);
     Server_Ptr server = std::make_shared<Server_Base>();
     R.Add_Server(server);
     server->Bind(PORT);
