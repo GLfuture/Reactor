@@ -9,7 +9,6 @@
 #include "conn.h"
 using std::map;
 using std::shared_ptr;
-#define log(x) printf(x)
 enum Error_Code
 {
     OK = 0,
