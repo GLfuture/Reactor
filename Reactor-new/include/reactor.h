@@ -33,7 +33,7 @@ public:
     // 设置阻塞
     void Set_Block(int fd);
 
-    void Add_Server(Server_Ptr& server);
+    void Add_Server(Server_Ptr server);
 
     void Exit();
 

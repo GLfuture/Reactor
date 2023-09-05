@@ -59,7 +59,7 @@ void Reactor::Set_Block(int fd)
     fcntl(fd, F_SETFL, flag);
 }
 
-void Reactor::Add_Server(Server_Ptr &server)
+void Reactor::Add_Server(Server_Ptr server)
 {
     this->_server = server;
 }
