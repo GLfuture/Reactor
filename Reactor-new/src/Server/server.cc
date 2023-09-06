@@ -72,27 +72,27 @@ ssize_t Server_Base::Send(Tcp_Conn_Ptr &conn_ptr, uint32_t len)
     return send(conn_ptr->Get_Conn_fd(), conn_ptr->Get_Wbuffer().cbegin(), len, 0);
 }
 
-int Server_Base::Close(int fd)
+map<uint32_t, Tcp_Conn_Ptr>::iterator Server_Base::Close(int fd)
 {
     int ret = close(fd);
     if (ret == -1)
-        return ret;
-    Del_Conn(fd);
+        throw ret;
+    return Del_Conn(fd);
 }
 
 void Server_Base::Clean_Conns()
 {
     for (map<uint32_t, Tcp_Conn_Ptr>::iterator it = connections.begin(); it != connections.end(); it++)
     {
-        Close((*it).first);
+        it = Close((*it).first);
+        it --;
     }
-    connections.clear();
 }
 
 
-void Server_Base::Del_Conn(int fd)
+map<uint32_t, Tcp_Conn_Ptr>::iterator Server_Base::Del_Conn(int fd)
 {
     map<uint32_t,Tcp_Conn_Ptr>::iterator it = connections.find(fd);
-    if(it == connections.end()) return;
-    connections.erase(it);
+    if(it == connections.end()) return it;
+    return connections.erase(it);
 }

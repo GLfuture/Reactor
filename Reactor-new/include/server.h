@@ -42,14 +42,14 @@ public:
 
     Tcp_Conn_Ptr Get_Conn(int fd) { return connections[fd]; }
 
-    int Close(int fd);
+    map<uint32_t, Tcp_Conn_Ptr>::iterator Close(int fd);
 
     void Clean_Conns();
 
     int Get_Sock() { return _fd; }
 
 private:
-    void Del_Conn(int fd);
+    map<uint32_t, Tcp_Conn_Ptr>::iterator Del_Conn(int fd);
     
 private:
     int _fd;
