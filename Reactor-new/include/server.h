@@ -36,9 +36,9 @@ public:
 
     int Accept();
 
-    ssize_t Recv(Tcp_Conn_Ptr& conn_ptr,uint32_t len);
+    ssize_t Recv(const Tcp_Conn_Ptr& conn_ptr,uint32_t len);
 
-    ssize_t Send(Tcp_Conn_Ptr& conn_ptr,uint32_t len);
+    ssize_t Send(const Tcp_Conn_Ptr& conn_ptr,uint32_t len);
 
     Tcp_Conn_Ptr Get_Conn(int fd) { return connections[fd]; }
 

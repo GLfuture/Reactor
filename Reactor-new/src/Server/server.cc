@@ -56,7 +56,7 @@ int Server_Base::Accept()
     return conn_fd;
 }
 
-ssize_t Server_Base::Recv(Tcp_Conn_Ptr &conn_ptr, uint32_t len)
+ssize_t Server_Base::Recv(const Tcp_Conn_Ptr &conn_ptr, uint32_t len)
 {
     char *buffer = new char[len];
     memset(buffer, 0, len);
@@ -67,7 +67,7 @@ ssize_t Server_Base::Recv(Tcp_Conn_Ptr &conn_ptr, uint32_t len)
     return ret;
 }
 
-ssize_t Server_Base::Send(Tcp_Conn_Ptr &conn_ptr, uint32_t len)
+ssize_t Server_Base::Send(const Tcp_Conn_Ptr &conn_ptr, uint32_t len)
 {
     return send(conn_ptr->Get_Conn_fd(), conn_ptr->Get_Wbuffer().cbegin(), len, 0);
 }
