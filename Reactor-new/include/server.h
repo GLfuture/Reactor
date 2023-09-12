@@ -42,6 +42,8 @@ public:
 
     Tcp_Conn_Ptr Get_Conn(int fd) { return connections[fd]; }
 
+    void Add_Conn(const Tcp_Conn_Ptr& conn_ptr);
+
     map<uint32_t, Tcp_Conn_Ptr>::iterator Close(int fd);
 
     void Clean_Conns();

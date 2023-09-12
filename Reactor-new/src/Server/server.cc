@@ -49,10 +49,6 @@ int Server_Base::Accept()
     memset(&sin, 0, sizeof(sin));
     socklen_t len = sizeof(sin);
     int conn_fd = accept(_fd, (sockaddr *)&sin, &len);
-    if (conn_fd == -1)
-        return conn_fd;
-    Tcp_Conn_Ptr connptr = std::make_shared<Tcp_Conn_Base>(conn_fd);
-    connections[conn_fd] = connptr;
     return conn_fd;
 }
 
@@ -70,6 +66,11 @@ ssize_t Server_Base::Recv(const Tcp_Conn_Ptr &conn_ptr, uint32_t len)
 ssize_t Server_Base::Send(const Tcp_Conn_Ptr &conn_ptr, uint32_t len)
 {
     return send(conn_ptr->Get_Conn_fd(), conn_ptr->Get_Wbuffer().cbegin(), len, 0);
+}
+
+void Server_Base::Add_Conn(const Tcp_Conn_Ptr &conn_ptr)
+{
+    this->connections[conn_ptr->Get_Conn_fd()] = conn_ptr;
 }
 
 map<uint32_t, Tcp_Conn_Ptr>::iterator Server_Base::Close(int fd)

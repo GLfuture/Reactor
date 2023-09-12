@@ -7,6 +7,8 @@
 void Accept_cb(Reactor &R , Server_Ptr server)
 {
     int clientfd = server->Accept();
+    Tcp_Conn_Ptr conn = std::make_shared<Tcp_Conn_Base>(clientfd);
+    server->Add_Conn(conn);
     R.Add_Reactor(clientfd,EPOLLIN);
 }
 void Timeout_cb()
