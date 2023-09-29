@@ -15,12 +15,6 @@ enum Error_Code
     SOCKET_ERR = -1,
     CONNECT_ERR = -2,
 };
-const char* arr[]=
-{
-    "successful",
-    "socket function is failed",
-    "connect function is failed",
-};
 
 using Tcp_Conn_Ptr = shared_ptr<Tcp_Conn_Base>;
 class Server_Base
@@ -47,6 +41,16 @@ public:
     map<uint32_t, Tcp_Conn_Ptr>::iterator Close(int fd);
 
     void Clean_Conns();
+
+    const char* Get_Ret_Str(Error_Code code){
+        const char *arr[] =
+            {
+                "successful",
+                "socket function is failed",
+                "connect function is failed",
+            };
+        return arr[code];
+    }
 
     int Get_Sock() { return _fd; }
 

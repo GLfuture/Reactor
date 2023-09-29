@@ -30,7 +30,7 @@ void Read_cb(Reactor &R ,Server_Ptr server)
     if(rlen == 0)
     {
         server->Close(clientfd);
-        R.Exit();
+        R.Del_Reactor(clientfd,EPOLLIN);
         return ;
     }
     Timer_Ptr timer = R.Set_Timeout_cb(1,10,Timer::TYPE_ONCE,std::bind(Timeout_cb));

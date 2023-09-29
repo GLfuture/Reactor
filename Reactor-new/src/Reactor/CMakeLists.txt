@@ -1,5 +1,4 @@
 include_directories(../../include)
 aux_source_directory(. SRCS)
-add_library(reactor SHARED ${SRCS})
-link_directories(../../lib)
-target_link_libraries(reactor server)
+add_library(reactor STATIC ${SRCS})
+set_target_properties(reactor PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../lib)
