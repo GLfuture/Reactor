@@ -1,13 +1,24 @@
+/*
+ * @Description: 
+ * @Version: 4.9
+ * @Author: Gong
+ * @Date: 2023-09-30 11:59:38
+ * @LastEditors: Gong
+ * @LastEditTime: 2023-09-30 12:48:16
+ */
 #include"reactor.h"
 #include <sys/socket.h>
 #define PORT 9999
 #define BACKLOG 10
 #define EVENT_NUM 1024
 //一定要传引用，因为定时任务会改变reactor的状态，导致段错误
+using Server_Ptr = std::shared_ptr<Server>;
+using Tcp_Conn_Ptr = std::shared_ptr<Tcp_Conn>;
+
 void Accept_cb(Reactor &R , Server_Ptr server)
 {
     int clientfd = server->Accept();
-    Tcp_Conn_Ptr conn = std::make_shared<Tcp_Conn_Base>(clientfd);
+    Tcp_Conn_Ptr conn = std::make_shared<Tcp_Conn>(clientfd);
     server->Add_Conn(conn);
     R.Add_Reactor(clientfd,EPOLLIN);
 }
@@ -24,7 +35,7 @@ void Exit_cb()
 void Read_cb(Reactor &R ,Server_Ptr server)
 {
     int clientfd = R.Get_Now_Event().data.fd;
-    Tcp_Conn_Ptr client = server->Get_Conn(clientfd);
+    Tcp_Conn_Ptr client = std::dynamic_pointer_cast<Tcp_Conn>(server->Get_Conn(clientfd));
     //std::cout<<R.Get_Now_Event().data.fd<<std::endl;
     int rlen=server->Recv(client,1024);
     if(rlen == 0)
@@ -33,7 +44,7 @@ void Read_cb(Reactor &R ,Server_Ptr server)
         R.Del_Reactor(clientfd,EPOLLIN);
         return ;
     }
-    Timer_Ptr timer = R.Set_Timeout_cb(1,10,Timer::TYPE_ONCE,std::bind(Timeout_cb));
+    Reactor::Timer_Ptr timer = R.Set_Timeout_cb(1,10,Timer::TYPE_ONCE,std::bind(Timeout_cb));
     string_view buffer = client->Get_Rbuffer();
     std::cout<<buffer<<std::endl;
     client->Appand_Wbuffer(string(buffer));
@@ -45,7 +56,7 @@ void Read_cb(Reactor &R ,Server_Ptr server)
 int main()
 {
     Reactor R(EVENT_NUM);
-    Server_Ptr server = std::make_shared<Server_Base>();
+    Server_Ptr server = std::make_shared<Server>();
     R.Add_Server(server);
     server->Bind(PORT);
     server->Listen(BACKLOG);

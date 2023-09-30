@@ -13,7 +13,7 @@ Reactor::Reactor(uint16_t event_num)
     this->Add_Reactor(timefd, EPOLLIN | EPOLLET);
 }
 
-Server_Ptr Reactor::Get_Server()
+Reactor::Server_Base_Ptr Reactor::Get_Server()
 {
     return this->_server;
 }
@@ -59,7 +59,7 @@ void Reactor::Set_Block(int fd)
     fcntl(fd, F_SETFL, flag);
 }
 
-void Reactor::Add_Server(Server_Ptr server)
+void Reactor::Add_Server(Reactor::Server_Base_Ptr server)
 {
     this->_server = server;
 }

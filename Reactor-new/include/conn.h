@@ -1,3 +1,11 @@
+/*
+ * @Description: 
+ * @Version: 4.9
+ * @Author: Gong
+ * @Date: 2023-09-30 11:59:38
+ * @LastEditors: Gong
+ * @LastEditTime: 2023-09-30 12:55:28
+ */
 #pragma once
 #ifndef CONN_H
 #define CONN_H
@@ -32,8 +40,22 @@ public:
 
     uint32_t Get_Conn_fd() { return _fd; }
 
+    virtual ~Tcp_Conn_Base(){
+        
+    }
 protected:
     uint32_t _fd;
     string _rbuffer;
     string _wbuffer;
+};
+
+class Tcp_Conn:public Tcp_Conn_Base
+{
+public:
+    Tcp_Conn(uint32_t conn_fd):Tcp_Conn_Base(conn_fd){
+        
+    }
+    ~Tcp_Conn() override{
+        
+    }
 };
