@@ -4,7 +4,7 @@
  * @Author: Gong
  * @Date: 2023-09-30 11:59:38
  * @LastEditors: Gong
- * @LastEditTime: 2023-09-30 12:55:28
+ * @LastEditTime: 2023-10-03 12:53:18
  */
 #pragma once
 #ifndef CONN_H
@@ -25,9 +25,9 @@ public:
 
     size_t Get_Wbuffer_Length() { return _wbuffer.length(); }
 
-    void Appand_Rbuffer(string rbuffer) { this->_rbuffer += rbuffer; }
+    void Appand_Rbuffer(string rbuffer) { this->_rbuffer.append(rbuffer); }
 
-    void Appand_Wbuffer(string wbuffer) { this->_wbuffer += wbuffer; }
+    void Appand_Wbuffer(string wbuffer) { this->_wbuffer.append(wbuffer); }
 
     // 只提供视图，以方便粘包拷贝不丢失数据
     string_view Get_Rbuffer() { return _rbuffer; }

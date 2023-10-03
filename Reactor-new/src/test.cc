@@ -19,7 +19,6 @@ void Accept_cb(Reactor &R , Server_Ptr server)
 {
     int clientfd = server->Accept();
     Tcp_Conn_Ptr conn = std::make_shared<Tcp_Conn>(clientfd);
-    std::cout<<"accept fd: "<<clientfd<<std::endl;
     server->Add_Conn(conn);
     R.Add_Reactor(clientfd,EPOLLIN);
 }

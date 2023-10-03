@@ -4,7 +4,7 @@
  * @Author: Gong
  * @Date: 2023-09-30 11:59:38
  * @LastEditors: Gong
- * @LastEditTime: 2023-10-03 07:23:22
+ * @LastEditTime: 2023-10-03 12:59:03
  */
 
 #include "server.h"
@@ -65,8 +65,8 @@ ssize_t Server_Base::Recv(const Server_Base::Tcp_Conn_Base_Ptr &conn_ptr, uint32
     memset(buffer, 0, len);
     ssize_t ret = recv(conn_ptr->Get_Conn_fd(), buffer, len, 0);
     if (ret <= 0)
-        return ret;
-    conn_ptr->Appand_Rbuffer(buffer);
+        return ret; 
+    conn_ptr->Appand_Rbuffer(string(buffer,ret));
     return ret;
 }
 
