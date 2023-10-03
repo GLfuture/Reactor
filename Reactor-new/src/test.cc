@@ -4,11 +4,11 @@
  * @Author: Gong
  * @Date: 2023-09-30 11:59:38
  * @LastEditors: Gong
- * @LastEditTime: 2023-09-30 12:48:16
+ * @LastEditTime: 2023-10-03 07:17:31
  */
 #include"reactor.h"
 #include <sys/socket.h>
-#define PORT 9999
+#define PORT 9998
 #define BACKLOG 10
 #define EVENT_NUM 1024
 //一定要传引用，因为定时任务会改变reactor的状态，导致段错误
@@ -19,6 +19,7 @@ void Accept_cb(Reactor &R , Server_Ptr server)
 {
     int clientfd = server->Accept();
     Tcp_Conn_Ptr conn = std::make_shared<Tcp_Conn>(clientfd);
+    std::cout<<"accept fd: "<<clientfd<<std::endl;
     server->Add_Conn(conn);
     R.Add_Reactor(clientfd,EPOLLIN);
 }
@@ -41,7 +42,10 @@ void Read_cb(Reactor &R ,Server_Ptr server)
     if(rlen == 0)
     {
         server->Close(clientfd);
+        server->Del_Conn(clientfd);
         R.Del_Reactor(clientfd,EPOLLIN);
+        std::cout<< "close fd: "<<clientfd<<std::endl;
+        std::cout<< "connections: " <<server->Get_Conn_Num()<<std::endl;
         return ;
     }
     Reactor::Timer_Ptr timer = R.Set_Timeout_cb(1,10,Timer::TYPE_ONCE,std::bind(Timeout_cb));

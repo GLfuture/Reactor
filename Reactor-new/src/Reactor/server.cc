@@ -1,11 +1,12 @@
 /*
  * @Description: 
- * @Version: 4.9
+ * @Version: 1.0
  * @Author: Gong
  * @Date: 2023-09-30 11:59:38
  * @LastEditors: Gong
- * @LastEditTime: 2023-09-30 12:43:44
+ * @LastEditTime: 2023-10-03 07:23:22
  */
+
 #include "server.h"
 
 Server_Base::Server_Base()
@@ -76,29 +77,32 @@ ssize_t Server_Base::Send(const Server_Base::Tcp_Conn_Base_Ptr &conn_ptr, uint32
 
 void Server_Base::Add_Conn(const Server_Base::Tcp_Conn_Base_Ptr &conn_ptr)
 {
+    std::lock_guard lock(this->mtx);
     this->connections[conn_ptr->Get_Conn_fd()] = conn_ptr;
 }
 
-map<uint32_t, Server_Base::Tcp_Conn_Base_Ptr>::iterator Server_Base::Close(int fd)
+
+int Server_Base::Close(int fd)
 {
-    int ret = close(fd);
-    if (ret == -1)
-        throw ret;
-    return Del_Conn(fd);
+    return close(fd);
 }
 
 void Server_Base::Clean_Conns()
 {
     for (map<uint32_t, Server_Base::Tcp_Conn_Base_Ptr>::iterator it = connections.begin(); it != connections.end(); it++)
     {
-        it = Close((*it).first);
-        it --;
+        Close((*it).first);
+        it = Del_Conn((*it).first);
+        if(it != connections.end()){
+            it--;
+        }
     }
 }
 
 
 map<uint32_t, Server_Base::Tcp_Conn_Base_Ptr>::iterator Server_Base::Del_Conn(int fd)
 {
+    std::lock_guard lock(this->mtx);
     map<uint32_t,Server_Base::Tcp_Conn_Base_Ptr>::iterator it = connections.find(fd);
     if(it == connections.end()) return it;
     return connections.erase(it);

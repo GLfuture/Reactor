@@ -4,7 +4,7 @@
  * @Author: Gong
  * @Date: 2023-09-30 11:59:38
  * @LastEditors: Gong
- * @LastEditTime: 2023-09-30 12:55:40
+ * @LastEditTime: 2023-10-03 07:16:44
  */
 #pragma once
 #include <iostream>
@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <map>
 #include <memory>
+#include <mutex>
 #include "conn.h"
 using std::map;
 using std::shared_ptr;
@@ -46,7 +47,11 @@ public:
 
     void Add_Conn(const Tcp_Conn_Base_Ptr& conn_ptr);
 
-    map<uint32_t, Tcp_Conn_Base_Ptr>::iterator Close(int fd);
+    map<uint32_t, Tcp_Conn_Base_Ptr>::iterator Del_Conn(int fd);
+
+    size_t Get_Conn_Num() { return connections.size(); }
+
+    int Close(int fd);
 
     void Clean_Conns();
 
@@ -65,11 +70,9 @@ public:
     virtual ~Server_Base() {
         
     }
-
-private:
-    map<uint32_t, Tcp_Conn_Base_Ptr>::iterator Del_Conn(int fd);
     
 private:
+    std::mutex mtx;
     int _fd;
     map<uint32_t,Tcp_Conn_Base_Ptr> connections;
 };
