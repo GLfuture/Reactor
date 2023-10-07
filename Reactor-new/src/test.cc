@@ -4,10 +4,11 @@
  * @Author: Gong
  * @Date: 2023-09-30 11:59:38
  * @LastEditors: Gong
- * @LastEditTime: 2023-10-03 07:17:31
+ * @LastEditTime: 2023-10-05 07:19:42
  */
 #include"reactor.h"
 #include <sys/socket.h>
+#include <thread>
 #define PORT 9998
 #define BACKLOG 10
 #define EVENT_NUM 1024
@@ -51,9 +52,18 @@ void Read_cb(Reactor &R ,Server_Ptr server)
     string_view buffer = client->Get_Rbuffer();
     std::cout<<buffer<<std::endl;
     client->Appand_Wbuffer(string(buffer));
-    int wlen= server->Send(client,rlen);
     client->Erase_Rbuffer(rlen);
-    client->Erase_Wbuffer(wlen);
+    R.Mod_Reactor(clientfd,EPOLLOUT);
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+}
+
+void Write_cb(Reactor &R ,Server_Ptr server)
+{
+    int clientfd  = R.Get_Now_Event().data.fd;
+    Tcp_Conn_Ptr conn = std::dynamic_pointer_cast<Tcp_Conn>(server->Get_Conn(clientfd));
+    int len = server->Send(conn , conn->Get_Wbuffer_Length());
+    conn->Erase_Wbuffer(len);
+    R.Mod_Reactor(clientfd,EPOLLIN);
 }
 
 int main()
@@ -68,6 +78,7 @@ int main()
     R.Set_No_Block(server->Get_Sock());
     R.Set_Accept_cb(std::bind(Accept_cb,std::ref(R),server));
     R.Set_Read_cb(std::bind(Read_cb,std::ref(R),server));
+    R.Set_Write_cb(std::bind(Write_cb,std::ref(R),server));
     R.Set_Exit_cb(std::bind(Exit_cb));
     R.Event_Loop();
     return 0;
