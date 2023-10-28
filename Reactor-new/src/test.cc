@@ -46,7 +46,6 @@ int main()
 {
     Reactor R(EVENT_NUM);
     Server_Ptr server = std::make_shared<Server_Base>();
-    R.Add_Server(server);
     server->Bind(PORT);
     server->Listen(BACKLOG);
     R.Add_Reactor(server->Get_Sock(),EPOLLIN);
@@ -55,6 +54,6 @@ int main()
     R.Set_Accept_cb(std::bind(Accept_cb,std::ref(R),server));
     R.Set_Read_cb(std::bind(Read_cb,std::ref(R),server));
     R.Set_Exit_cb(std::bind(Exit_cb));
-    R.Event_Loop();
+    R.Event_Loop(server,-1);
     return 0;
 }

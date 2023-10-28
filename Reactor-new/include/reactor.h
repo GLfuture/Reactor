@@ -33,9 +33,7 @@ public:
     // 设置阻塞
     void Set_Block(int fd);
 
-    void Add_Server(Server_Ptr server);
-
-    void Exit();
+    void Exit(Server_Ptr& _server);
 
     // 获取事件数量
     uint32_t Get_Event_Num() { return this->event_num; }
@@ -44,7 +42,7 @@ public:
     epoll_event Get_Now_Event() { return *event; }
 
     // 事件主循环,默认死等
-    void Event_Loop(uint16_t timeout = -1);
+    void Event_Loop(Server_Ptr& _server ,uint16_t timeout = -1);
 
     void Set_Accept_cb(function<void()> &&accept_cb) { this->Accept_cb = accept_cb; }
 
@@ -86,7 +84,6 @@ private:
 
 private:
     uint16_t epfd;
-    Server_Ptr _server;
     bool quit;
     uint32_t event_num;
     epoll_event *event;

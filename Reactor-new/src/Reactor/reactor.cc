@@ -13,10 +13,6 @@ Reactor::Reactor(uint16_t event_num)
     this->Add_Reactor(timefd, EPOLLIN | EPOLLET);
 }
 
-Server_Ptr Reactor::Get_Server()
-{
-    return this->_server;
-}
 
 uint16_t Reactor::Add_Reactor(int fd, uint32_t event)
 {
@@ -59,12 +55,8 @@ void Reactor::Set_Block(int fd)
     fcntl(fd, F_SETFL, flag);
 }
 
-void Reactor::Add_Server(Server_Ptr server)
-{
-    this->_server = server;
-}
 
-void Reactor::Exit()
+void Reactor::Exit(Server_Ptr& _server)
 {
     if (exit_cb != NULL)
         this->exit_cb();
@@ -73,7 +65,7 @@ void Reactor::Exit()
     delete event;
 }
 
-void Reactor::Event_Loop(uint16_t timeout)
+void Reactor::Event_Loop( Server_Ptr& _server , uint16_t timeout)
 {
     epoll_event *events = new epoll_event[this->event_num];
     while (!this->quit)
