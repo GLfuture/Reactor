@@ -26,8 +26,6 @@ public:
     /// @param event_num
     /// @param buffer_size
     Reactor(uint16_t event_num);
-    // 返回server对象
-    Server_Base_Ptr Get_Server();
 
     uint16_t Add_Reactor(int fd, uint32_t event);
 
@@ -93,7 +91,6 @@ private:
 
 private:
     uint16_t epfd;
-    Server_Ptr _server;
     bool quit;
     uint32_t event_num;
     epoll_event *event;
