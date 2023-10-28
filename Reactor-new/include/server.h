@@ -1,3 +1,11 @@
+/*
+ * @Description: 
+ * @Version: 4.9
+ * @Author: Gong
+ * @Date: 2023-09-30 11:59:38
+ * @LastEditors: Gong
+ * @LastEditTime: 2023-10-03 07:16:44
+ */
 #pragma once
 #include <iostream>
 #include <string>
@@ -6,6 +14,7 @@
 #include <sys/socket.h>
 #include <map>
 #include <memory>
+#include <mutex>
 #include "conn.h"
 using std::map;
 using std::shared_ptr;
@@ -16,13 +25,13 @@ enum Error_Code
     CONNECT_ERR = -2,
 };
 
-using Tcp_Conn_Ptr = shared_ptr<Tcp_Conn_Base>;
 class Server_Base
 {
 public:
+    using Tcp_Conn_Base_Ptr = shared_ptr<Tcp_Conn_Base>;
     Server_Base();
 
-    Tcp_Conn_Ptr Conncet(string sip,uint32_t sport);
+    int Conncet(string sip,uint32_t sport);
 
     int Bind(uint32_t port);
 
@@ -30,15 +39,19 @@ public:
 
     int Accept();
 
-    ssize_t Recv(const Tcp_Conn_Ptr& conn_ptr,uint32_t len);
+    ssize_t Recv(const Tcp_Conn_Base_Ptr& conn_ptr,uint32_t len);
 
-    ssize_t Send(const Tcp_Conn_Ptr& conn_ptr,uint32_t len);
+    ssize_t Send(const Tcp_Conn_Base_Ptr& conn_ptr,uint32_t len);
 
-    Tcp_Conn_Ptr Get_Conn(int fd) { return connections[fd]; }
+    Tcp_Conn_Base_Ptr Get_Conn(int fd) { return connections[fd]; }
 
-    void Add_Conn(const Tcp_Conn_Ptr& conn_ptr);
+    void Add_Conn(const Tcp_Conn_Base_Ptr& conn_ptr);
 
-    map<uint32_t, Tcp_Conn_Ptr>::iterator Close(int fd);
+    map<uint32_t, Tcp_Conn_Base_Ptr>::iterator Del_Conn(int fd);
+
+    size_t Get_Conn_Num() { return connections.size(); }
+
+    int Close(int fd);
 
     void Clean_Conns();
 
@@ -54,10 +67,20 @@ public:
 
     int Get_Sock() { return _fd; }
 
-private:
-    map<uint32_t, Tcp_Conn_Ptr>::iterator Del_Conn(int fd);
+    virtual ~Server_Base() {
+        
+    }
     
 private:
+    std::mutex mtx;
     int _fd;
-    map<uint32_t,Tcp_Conn_Ptr> connections;
+    map<uint32_t,Tcp_Conn_Base_Ptr> connections;
+};
+
+class Server:public Server_Base
+{
+public:
+    ~Server() override {
+
+    }
 };

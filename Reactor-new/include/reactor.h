@@ -1,3 +1,11 @@
+/*
+ * @Description: 
+ * @Version: 4.9
+ * @Author: Gong
+ * @Date: 2023-09-30 11:59:38
+ * @LastEditors: Gong
+ * @LastEditTime: 2023-09-30 12:40:53
+ */
 #pragma once
 #include <cstdint>
 #define ENABLE_RBTREE_TIMER 1
@@ -6,19 +14,20 @@
 #include <sys/epoll.h>
 #include <fcntl.h>
 #include <functional>
-using Timer_Ptr = std::shared_ptr<Timer>;
+
 using std::function;
-using Server_Ptr = shared_ptr<Server_Base>;
 // 注意一个端口对应一个reactor管理
 class Reactor
 {
 public:
+    using Server_Base_Ptr = shared_ptr<Server_Base>;
+    using Timer_Ptr = std::shared_ptr<Timer>;
     /// @brief
     /// @param event_num
     /// @param buffer_size
     Reactor(uint16_t event_num);
     // 返回server对象
-    Server_Ptr Get_Server();
+    Server_Base_Ptr Get_Server();
 
     uint16_t Add_Reactor(int fd, uint32_t event);
 
@@ -84,6 +93,7 @@ private:
 
 private:
     uint16_t epfd;
+    Server_Ptr _server;
     bool quit;
     uint32_t event_num;
     epoll_event *event;
