@@ -8,9 +8,11 @@
 #include <sys/timerfd.h>
 #include <chrono>
 #include <time.h>
+#include <memory>
 class Timer
 {
 public:
+    using Ptr = std::shared_ptr<Timer>;
     enum TimerType
     {
         TYPE_BEG = 0,

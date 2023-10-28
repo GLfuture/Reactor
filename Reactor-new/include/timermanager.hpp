@@ -14,6 +14,7 @@
 class TimerManager:public RBtree_Timer_NSP::RBtree_TimerManager
 {
 public:
+    using Ptr = std::shared_ptr<TimerManager>;
     int Get_Timerfd()
     {
         return this->timerfd;

@@ -14,11 +14,13 @@
 #include <string>
 #include <string.h>
 #include <string_view>
+#include <memory>
 using std::string;
 using std::string_view;
 class Tcp_Conn_Base
 {
 public:
+    using Ptr = std::shared_ptr<Tcp_Conn_Base>;
     Tcp_Conn_Base(uint32_t conn_fd);
 
     size_t Get_Rbuffer_Length() { return _rbuffer.length(); }
@@ -52,6 +54,7 @@ protected:
 class Tcp_Conn:public Tcp_Conn_Base
 {
 public:
+    using Ptr = std::shared_ptr<Tcp_Conn>;
     Tcp_Conn(uint32_t conn_fd):Tcp_Conn_Base(conn_fd){
         
     }

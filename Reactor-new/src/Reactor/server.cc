@@ -9,73 +9,53 @@
 
 #include "server.h"
 
-Server_Base::Server_Base()
+int Server_Base::Start_Timer()
 {
-    _fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (_fd <= 0)
-    {
-        printf("socket fails");
-        exit(-1);
-    }
+    return timermanager.Create_Timerfd();
 }
 
-int Server_Base::Conncet(string sip, uint32_t sport)
+Server_Base::Server_Base(int fd, Net_Interface_Base::Ptr &interface)
 {
-    int conn_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (conn_fd <= 0)
-        throw SOCKET_ERR;
-    sockaddr_in sin = {0};
-    memset(&sin, 0, sizeof(sin));
-    sin.sin_addr.s_addr = inet_addr(sip.c_str());
-    sin.sin_family = AF_INET;
-    sin.sin_port = htons(sport);
-    int ret = connect(conn_fd, (sockaddr *)&sin, sizeof(sin));
-    if (ret == -1)
-        throw CONNECT_ERR;
-    return conn_fd;
+    this->_fd = fd;
+    this->interface = interface;
 }
 
-int Server_Base::Bind(uint32_t port)
+int Server_Base::Init_Epoll_Fd()
 {
-    sockaddr_in sin = {0};
-    memset(&sin, 0, sizeof(sin));
-    sin.sin_family = AF_INET;
-    sin.sin_port = htons(port);
-    sin.sin_addr.s_addr = INADDR_ANY;
-    return bind(_fd, (sockaddr *)&sin, sizeof(sin));
-}
-
-int Server_Base::Listen(uint32_t backlog)
-{
-    return listen(_fd, backlog);
+    epfd = epoll_create(1);
+    return epfd;
 }
 
 int Server_Base::Accept()
 {
-    sockaddr_in sin = {0};
-    memset(&sin, 0, sizeof(sin));
-    socklen_t len = sizeof(sin);
-    int conn_fd = accept(_fd, (sockaddr *)&sin, &len);
-    return conn_fd;
+    return  interface->Accept(_fd);
 }
 
-ssize_t Server_Base::Recv(const Server_Base::Tcp_Conn_Base_Ptr &conn_ptr, uint32_t len)
+
+ssize_t Server_Base::Recv(Tcp_Conn_Base::Ptr &conn_ptr, uint32_t len)
 {
-    char *buffer = new char[len];
-    memset(buffer, 0, len);
-    ssize_t ret = recv(conn_ptr->Get_Conn_fd(), buffer, len, 0);
+    std::string buffer="";
+    ssize_t ret = interface->Recv(conn_ptr->Get_Conn_fd(),buffer,len);
     if (ret <= 0)
         return ret; 
-    conn_ptr->Appand_Rbuffer(string(buffer,ret));
+    conn_ptr->Appand_Rbuffer(buffer);
     return ret;
 }
 
-ssize_t Server_Base::Send(const Server_Base::Tcp_Conn_Base_Ptr &conn_ptr, uint32_t len)
+ssize_t Server_Base::Send(const Tcp_Conn_Base::Ptr &conn_ptr, uint32_t len)
 {
-    return send(conn_ptr->Get_Conn_fd(), conn_ptr->Get_Wbuffer().cbegin(), len, 0);
+    return interface->Send(conn_ptr->Get_Conn_fd(),std::string(conn_ptr->Get_Wbuffer()),len);
 }
 
-void Server_Base::Add_Conn(const Server_Base::Tcp_Conn_Base_Ptr &conn_ptr)
+Tcp_Conn_Base::Ptr Server_Base::Get_Conn(int fd)
+{
+    
+    map<uint32_t,Tcp_Conn_Base::Ptr>::iterator it = connections.find(fd);
+    if(it == connections.end()) return nullptr;
+    return it->second;
+}
+
+void Server_Base::Add_Conn(const Tcp_Conn_Base::Ptr &conn_ptr)
 {
     std::lock_guard lock(this->mtx);
     this->connections[conn_ptr->Get_Conn_fd()] = conn_ptr;
@@ -89,7 +69,7 @@ int Server_Base::Close(int fd)
 
 void Server_Base::Clean_Conns()
 {
-    for (map<uint32_t, Server_Base::Tcp_Conn_Base_Ptr>::iterator it = connections.begin(); it != connections.end(); it++)
+    for (map<uint32_t, Tcp_Conn_Base::Ptr>::iterator it = connections.begin(); it != connections.end(); it++)
     {
         Close((*it).first);
         it = Del_Conn((*it).first);
@@ -100,10 +80,10 @@ void Server_Base::Clean_Conns()
 }
 
 
-map<uint32_t, Server_Base::Tcp_Conn_Base_Ptr>::iterator Server_Base::Del_Conn(int fd)
+map<uint32_t, Tcp_Conn_Base::Ptr>::iterator Server_Base::Del_Conn(int fd)
 {
     std::lock_guard lock(this->mtx);
-    map<uint32_t,Server_Base::Tcp_Conn_Base_Ptr>::iterator it = connections.find(fd);
+    map<uint32_t,Tcp_Conn_Base::Ptr>::iterator it = connections.find(fd);
     if(it == connections.end()) return it;
     return connections.erase(it);
 }

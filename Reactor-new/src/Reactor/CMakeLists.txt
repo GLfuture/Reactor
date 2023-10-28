@@ -1,5 +1,5 @@
 include_directories(../../include)
-SET(SERVER_SRCS server.cc conn.cc)
+SET(SERVER_SRCS server.cc conn.cc net_interface.cc)
 add_library(server STATIC ${SERVER_SRCS})
 set_target_properties(server PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/../lib)
 aux_source_directory(. SRCS)

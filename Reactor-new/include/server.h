@@ -7,49 +7,68 @@
  * @LastEditTime: 2023-10-03 07:16:44
  */
 #pragma once
-#include <iostream>
-#include <string>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <sys/socket.h>
+#define ENABLE_RBTREE_TIMER 1
 #include <map>
 #include <memory>
 #include <mutex>
+#include <functional>
+#include <sys/epoll.h>
 #include "conn.h"
+#include "net_interface.h"
+#include "timermanager.hpp"
+
+
+
 using std::map;
 using std::shared_ptr;
-enum Error_Code
+class Callback
 {
-    OK = 0,
-    SOCKET_ERR = -1,
-    CONNECT_ERR = -2,
+public:
+    Callback()
+    {
+        Accept_cb = NULL;
+        Read_cb = NULL;
+        Write_cb = NULL;
+        Exit_cb = NULL;
+    }
+    std::function<void()> Accept_cb;
+    std::function<void()> Read_cb;
+    std::function<void()> Write_cb;
+    std::function<void()> Exit_cb;
 };
+
 
 class Server_Base
 {
 public:
-    using Tcp_Conn_Base_Ptr = shared_ptr<Tcp_Conn_Base>;
-    Server_Base();
+    Callback callback;
+    TimerManager timermanager;
 
-    int Conncet(string sip,uint32_t sport);
+public:
+    using Ptr = shared_ptr<Server_Base>;
 
-    int Bind(uint32_t port);
+    //return timerfd
+    int Start_Timer();
 
-    int Listen(uint32_t backlog);
+    Server_Base(int fd , Net_Interface_Base::Ptr& interface);
+
+    int Init_Epoll_Fd();
 
     int Accept();
 
-    ssize_t Recv(const Tcp_Conn_Base_Ptr& conn_ptr,uint32_t len);
+    ssize_t Recv(Tcp_Conn_Base::Ptr& conn_ptr,uint32_t len);
 
-    ssize_t Send(const Tcp_Conn_Base_Ptr& conn_ptr,uint32_t len);
+    ssize_t Send(const Tcp_Conn_Base::Ptr& conn_ptr,uint32_t len);
 
-    Tcp_Conn_Base_Ptr Get_Conn(int fd) { return connections[fd]; }
+    Tcp_Conn_Base::Ptr Get_Conn(int fd) ;
 
-    void Add_Conn(const Tcp_Conn_Base_Ptr& conn_ptr);
+    void Add_Conn(const Tcp_Conn_Base::Ptr& conn_ptr);
 
-    map<uint32_t, Tcp_Conn_Base_Ptr>::iterator Del_Conn(int fd);
+    map<uint32_t, Tcp_Conn_Base::Ptr>::iterator Del_Conn(int fd);
 
     size_t Get_Conn_Num() { return connections.size(); }
+
+    int Get_Epoll_Fd() {    return this->epfd;}
 
     int Close(int fd);
 
@@ -67,19 +86,44 @@ public:
 
     int Get_Sock() { return _fd; }
 
+#if ENABLE_RBTREE_TIMER | ENABLE_MINHEAP_TIMER
+    Timer::Ptr Set_Timeout_cb(uint16_t timerid, uint64_t interval_time, Timer::TimerType type, std::function<void()> &&timeout_cb)
+    {
+        return timermanager.Add_Timer(timerid, interval_time, type, timeout_cb);
+    }
+#elif ENABLE_TIMERWHEEL_TIMER
+    Timer::Ptr Set_Timeout_cb(uint16_t timerid, uint64_t interval_time, function<void()> &&timeout_cb)
+    {
+        return timermanager.Add_Timer(timerid, timeout_cb, interval_time);
+    }
+#endif
+#if ENABLE_RBTREE_TIMER
+    void Del_Timeout_cb(uint16_t timerid) { timermanager.Del_Timer(timerid); }
+#endif
+    void Del_Timeout_cb(Timer::Ptr &timer) { timermanager.Del_Timer(timer); }
+
     virtual ~Server_Base() {
         
     }
-    
+
 private:
+    int epfd;
     std::mutex mtx;
+    Net_Interface_Base::Ptr interface;
     int _fd;
-    map<uint32_t,Tcp_Conn_Base_Ptr> connections;
+    map<uint32_t,Tcp_Conn_Base::Ptr> connections;
 };
+
 
 class Server:public Server_Base
 {
 public:
+    using Ptr = shared_ptr<Server>;
+    Server(int fd,Net_Interface_Base::Ptr& interface):Server_Base(fd,interface)
+    {
+
+    }
+
     ~Server() override {
 
     }
