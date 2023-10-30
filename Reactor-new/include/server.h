@@ -119,7 +119,7 @@ class Server:public Server_Base
 {
 public:
     using Ptr = shared_ptr<Server>;
-    Server(int fd,Net_Interface_Base::Ptr& interface):Server_Base(fd,interface)
+    Server(int fd,Net_Interface_Base::Ptr interface):Server_Base(fd,interface)
     {
 
     }
