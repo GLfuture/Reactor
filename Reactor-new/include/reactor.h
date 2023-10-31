@@ -35,8 +35,6 @@ public:
     // 设置阻塞
     void Set_Block(int fd);
 
-    void Exit(Server_Base::Ptr& _server);
-
     // 获取事件数量
     uint32_t Get_Event_Num() { return this->event_num; }
 
@@ -45,6 +43,11 @@ public:
 
     // 事件主循环,默认死等
     void Event_Loop(Server_Base::Ptr _server,int epfd  ,int64_t timeout = -1);
+
+    ~Reactor()
+    {
+        delete event;
+    }
 
 private:
     bool quit;

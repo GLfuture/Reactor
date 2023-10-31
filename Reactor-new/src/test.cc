@@ -32,9 +32,14 @@ void Timeout_cb()
     printf("调用\n");
 }
 
-void Exit_cb()
+void Exit_cb(Reactor::Ptr R ,Server_Base::Ptr server)
 {
-    printf("exit\n");
+    int clientfd = R->Get_Now_Event().data.fd;
+    server->Close(clientfd);
+    server->Del_Conn(clientfd);
+    R->Del_Reactor(server->Get_Epoll_Fd(), clientfd, EPOLLIN);
+    std::cout<< "close fd: "<<clientfd<<std::endl;
+    std::cout<< "connections: " <<server->Get_Conn_Num()<<std::endl;
 }
 
 void Read_cb(Reactor::Ptr R ,Server_Base::Ptr server)
@@ -47,11 +52,7 @@ void Read_cb(Reactor::Ptr R ,Server_Base::Ptr server)
     int rlen=server->Recv(client,1024);
     if(rlen == 0)
     {
-        server->Close(clientfd);
-        server->Del_Conn(clientfd);
-        R->Del_Reactor(server->Get_Epoll_Fd(),clientfd,EPOLLIN);
-        std::cout<< "close fd: "<<clientfd<<std::endl;
-        std::cout<< "connections: " <<server->Get_Conn_Num()<<std::endl;
+        Exit_cb(R,server);
         return ;
     }
     string_view buffer = client->Get_Rbuffer();
@@ -68,6 +69,10 @@ void Write_cb(Reactor::Ptr R ,Server_Base::Ptr server)
     int clientfd  = R->Get_Now_Event().data.fd;
     Tcp_Conn_Base::Ptr conn = std::dynamic_pointer_cast<Tcp_Conn>(server->Get_Conn(clientfd));
     int len = server->Send(conn , conn->Get_Wbuffer_Length());
+    if(len == -1){
+        Exit_cb(R,server);
+        return;
+    }
     conn->Erase_Wbuffer(len);
     R->Mod_Reactor(server->Get_Epoll_Fd(), clientfd,EPOLLIN);
 }
@@ -99,7 +104,7 @@ int main()
         servers[i]->callback.Accept_cb = std::bind(Accept_cb,R[i],servers[i]);
         servers[i]->callback.Read_cb = std::bind(Read_cb,R[i],servers[i]);
         servers[i]->callback.Write_cb = std::bind(Write_cb,R[i],servers[i]);
-        servers[i]->callback.Exit_cb = std::bind(Exit_cb);
+        servers[i]->callback.Exit_cb = std::bind(Exit_cb,R[i],servers[i]);
         servers[i]->Init_Epoll_Fd();
         R[i]->Add_Reactor(servers[i]->Get_Epoll_Fd(),sock,EPOLLIN);
         int timerfd = servers[i]->Start_Timer();

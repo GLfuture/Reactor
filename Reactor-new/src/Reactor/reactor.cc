@@ -48,16 +48,6 @@ void Reactor::Set_Block(int fd)
     fcntl(fd, F_SETFL, flag);
 }
 
-
-void Reactor::Exit(Server_Base::Ptr& _server)
-{
-    if (_server->callback.Exit_cb != NULL)
-        _server->callback.Exit_cb();
-    this->quit = true;
-    _server->Clean_Conns();
-    delete event;
-}
-
 void Reactor::Event_Loop( Server_Base::Ptr _server ,int epfd  , int64_t timeout)
 {
     epoll_event *events = new epoll_event[this->event_num];
