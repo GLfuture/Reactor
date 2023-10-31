@@ -44,7 +44,7 @@ public:
     epoll_event Get_Now_Event() { return *event; }
 
     // 事件主循环,默认死等
-    void Event_Loop(Server_Base::Ptr& _server,int epfd  ,int64_t timeout = -1);
+    void Event_Loop(Server_Base::Ptr _server,int epfd  ,int64_t timeout = -1);
 
 private:
     bool quit;

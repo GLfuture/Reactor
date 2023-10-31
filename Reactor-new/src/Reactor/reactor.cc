@@ -58,7 +58,7 @@ void Reactor::Exit(Server_Base::Ptr& _server)
     delete event;
 }
 
-void Reactor::Event_Loop( Server_Base::Ptr& _server ,int epfd  , int64_t timeout)
+void Reactor::Event_Loop( Server_Base::Ptr _server ,int epfd  , int64_t timeout)
 {
     epoll_event *events = new epoll_event[this->event_num];
     while (!this->quit)
