@@ -10,7 +10,7 @@
 #include <sys/socket.h>
 #include <thread>
 #include <unistd.h>
-#define PORT 9999
+#define PORT 9998
 #define BACKLOG 20
 #define EVENT_NUM 1024
 #define SERVER_NUM 4
@@ -25,6 +25,12 @@ void Accept_cb(Reactor::Ptr R , Server_Base::Ptr server)
     if(clientfd <= 0) return;
     Tcp_Conn_Base::Ptr conn = std::make_shared<Tcp_Conn>(clientfd);
     server->Add_Conn(conn);
+    Tcp_Conn_Base::Ptr temp = server->Connect("39.156.66.14",80);;
+    if(temp == nullptr){
+        std::cout<<"connection failed"<<std::endl;
+    }else{
+        std::cout<<"connection success : "<<temp->Get_Conn_fd()<<std::endl;
+    }
     R->Add_Reactor(server->Get_Epoll_Fd(), clientfd,EPOLLIN);
 }
 void Timeout_cb()

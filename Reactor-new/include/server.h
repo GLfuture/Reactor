@@ -60,6 +60,8 @@ public:
 
     ssize_t Send(const Tcp_Conn_Base::Ptr& conn_ptr,uint32_t len);
 
+    Tcp_Conn_Base::Ptr Connect(std::string sip,uint32_t s_port);
+
     Tcp_Conn_Base::Ptr Get_Conn(int fd) ;
 
     void Add_Conn(const Tcp_Conn_Base::Ptr& conn_ptr);

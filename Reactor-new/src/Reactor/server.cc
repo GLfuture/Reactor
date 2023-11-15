@@ -47,6 +47,14 @@ ssize_t Server_Base::Send(const Tcp_Conn_Base::Ptr &conn_ptr, uint32_t len)
     return interface->Send(conn_ptr->Get_Conn_fd(),std::string(conn_ptr->Get_Wbuffer()),len);
 }
 
+Tcp_Conn_Base::Ptr Server_Base::Connect(std::string sip,uint32_t sport)
+{
+    int fd = interface->Conncet(sip,sport);
+    if(fd <= 0) return nullptr;
+    Tcp_Conn_Base::Ptr conn = std::make_shared<Tcp_Conn_Base>(fd);
+    return conn;
+}
+
 Tcp_Conn_Base::Ptr Server_Base::Get_Conn(int fd)
 {
     
