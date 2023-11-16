@@ -18,6 +18,7 @@ Server_Base::Server_Base(int fd, Net_Interface_Base::Ptr &interface)
 {
     this->_fd = fd;
     this->interface = interface;
+    this->_ssl_tup = {nullptr,nullptr};
 }
 
 int Server_Base::Init_Epoll_Fd()
@@ -26,11 +27,40 @@ int Server_Base::Init_Epoll_Fd()
     return epfd;
 }
 
+void Server_Base::SSL_Env_Init()
+{
+    interface->SSL_Env_Init();
+}
+
+Net_Interface_Base::SSL_Tup Server_Base::SSL_Init(long min_version,long max_version)
+{
+    return interface->SSL_Init(min_version,max_version);
+}
+
+void Server_Base::SSL_Set_Fd(SSL* ssl,int fd)
+{
+    interface->SSL_Set_Fd(ssl,fd);
+}
+
+void Server_Base::SSL_Destory(Net_Interface_Base::SSL_Tup ssl_tup)
+{
+    interface->SSL_Destory(std::get<SSL*>(ssl_tup),std::get<SSL_CTX*>(ssl_tup));
+}
+
+void Server_Base::SSL_Env_Destory()
+{
+    interface->SSL_Env_Destory();
+}
+
 int Server_Base::Accept()
 {
     return  interface->Accept(_fd);
 }
 
+int Server_Base::SSL_Accept(SSL* ssl)
+{
+    return interface->SSL_Accept(ssl);
+}
 
 ssize_t Server_Base::Recv(Tcp_Conn_Base::Ptr &conn_ptr, uint32_t len)
 {
@@ -42,9 +72,22 @@ ssize_t Server_Base::Recv(Tcp_Conn_Base::Ptr &conn_ptr, uint32_t len)
     return ret;
 }
 
+ssize_t Server_Base::SSL_Recv(SSL* ssl, Tcp_Conn_Base::Ptr& conn_ptr,uint32_t len)
+{
+    std::string buffer;
+    int ret_len = interface->SSL_Recv(ssl,buffer,len);
+    conn_ptr->Appand_Rbuffer(buffer);
+    return ret_len;
+}
+
 ssize_t Server_Base::Send(const Tcp_Conn_Base::Ptr &conn_ptr, uint32_t len)
 {
     return interface->Send(conn_ptr->Get_Conn_fd(),std::string(conn_ptr->Get_Wbuffer()),len);
+}
+
+ssize_t Server_Base::SSL_Send(SSL* ssl, const Tcp_Conn_Base::Ptr& conn_ptr,uint32_t len)
+{
+    return interface->SSL_Send(ssl,std::string(conn_ptr->Get_Wbuffer()),len);
 }
 
 Tcp_Conn_Base::Ptr Server_Base::Connect(std::string sip,uint32_t sport)
@@ -53,6 +96,11 @@ Tcp_Conn_Base::Ptr Server_Base::Connect(std::string sip,uint32_t sport)
     if(fd <= 0) return nullptr;
     Tcp_Conn_Base::Ptr conn = std::make_shared<Tcp_Conn_Base>(fd);
     return conn;
+}
+
+int Server_Base::SSL_Connect(SSL *ssl)
+{
+    return interface->SSL_Connect(ssl);
 }
 
 Tcp_Conn_Base::Ptr Server_Base::Get_Conn(int fd)

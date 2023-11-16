@@ -62,6 +62,10 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "thread": "cpp",
-        "typeinfo": "cpp"
-    }
+        "typeinfo": "cpp",
+        "cinttypes": "cpp",
+        "*.ipp": "cpp",
+        "variant": "cpp"
+    },
+    "cmake.sourceDirectory": "/home/gong/projects/Reactor/Reactor-new"
 }
